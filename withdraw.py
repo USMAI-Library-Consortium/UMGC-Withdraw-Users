@@ -57,7 +57,7 @@ def create_employee_set() -> str | None:
     terminated_employee_barcodes = [user["Column4"] for user in user_data]
 
     # 2 - Create a set with the employees
-    set_name = f"Terminated Employees as of {datetime.now().strftime('%m/%d/%Y')}"
+    set_name = f"Terminated Employees as of {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}"
     set_body = {
         "link": "",
         "name": set_name,
@@ -137,11 +137,11 @@ def create_student_set() -> str | None:
         inactive_student_barcodes.extend(additional_barcodes)
 
     print(f"Found {len(inactive_student_barcodes)} students.")
-    if len(inactive_student_barcodes) > 1600:
+    if len(inactive_student_barcodes) > 1500:
         print("This may take some time, as it must be done in chunks...")
 
     # 2 - Create a set for the inactive students
-    set_name = f"Inactive Students as of {datetime.now().strftime('%m/%d/%Y')}"
+    set_name = f"Inactive Students as of {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}"
     set_body = {
         "link": "",
         "name": set_name,
