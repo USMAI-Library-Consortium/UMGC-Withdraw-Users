@@ -160,8 +160,13 @@ def create_student_set() -> str | None:
                                headers={"Authorization": f"apikey {API_KEY}",
                                         "Accept": "application/json"},
                                json=set_body)
-    set_url = set_result.json()["link"]
-    set_id = set_result.json()["id"]
+    try:
+        set_url = set_result.json()["link"]
+        set_id = set_result.json()["id"]
+    except:
+        print("Set could not be created.")
+        print(set_result.content)
+        exit(1)
 
     # 3 - Add students to set
 
