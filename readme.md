@@ -12,9 +12,8 @@ This script is designed to offboard UMGC employees and students in Alma. It has 
 7. If `RUN_JOBS` is true, run an Alma job to update the students as per UMGC offboarding practices.
 
 ## Quirks
-1. This script can only offboard up to 1000 staff members.
-2. The sets that this script creates must be deleted if you wish to run it again in the same day. 
-3. The TEST_BARCODE is the test that determines whether SIS has been run. If this user has been updated for some OTHER reason and SIS has not run, the script will assume SIS has been run and will likely offboard unwanted users. 
+1. This script can only offboard up to 1000 staff members
+2. The TEST_BARCODE is the test that determines whether SIS has been run. If this user has been updated for some OTHER reason and SIS has not run, the script will assume SIS has been run and will likely offboard unwanted users. 
 
 ## Requirements
 
