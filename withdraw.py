@@ -3,45 +3,15 @@ from datetime import datetime, date, timedelta
 import xmltodict
 import requests
 import time
-from json import JSONDecodeError
-import xml.etree.ElementTree as ElementTree
 from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 TEST_BARCODE = os.getenv("TEST_BARCODE")
 RUN_JOBS = os.getenv("RUN_JOBS", "false").lower() == "true"
-
-
-def check_valid_status() -> bool:
-    """Returns whether it's okay to go ahead with the process.
-    Checks both Alma API connection and that the status date is in the current month."""
-    user_data = requests.get(f"https://api-na.hosted.exlibrisgroup.com/almaws/v1/users/{TEST_BARCODE}",
-                             headers={"Authorization": f"apikey {API_KEY}",
-                                      "Accept": "application/json"})
-
-    try:
-        status_date_string = user_data.json()["status_date"]
-        print(f"Status Date on Test User is {status_date_string}")
-    except KeyError:
-        print(f"User with barcode {TEST_BARCODE} not found.")
-        return False
-    except JSONDecodeError:
-        try:
-            root = ElementTree.fromstring(user_data.content)
-            error_message = root.find("{http://com/exlibris/urm/general/xmlbeans}errorList").find("{http://com/exlibris/urm/general/xmlbeans}error").find("{http://com/exlibris/urm/general/xmlbeans}errorMessage").text
-            print(f"Error: {error_message}")
-        except Exception as e:
-            print(e)
-            print(user_data.content)
-        return False
-
-    # Check whether the status was changed in the current month
-    # If not, the job is not ready to run
-    status_date = date.fromisoformat(status_date_string.replace("Z", ""))
-    first_day_of_month = date.today().replace(day=1)
-
-    return True if status_date >= first_day_of_month else False
+# If the amount of staff users are above this amount, quit the program as the SIS load
+# status code update may not have run.
+STAFF_USER_THRESHOLD = int(os.getenv("STAFF_USER_THRESHOLD", "0"))
 
 
 def create_employee_set() -> str | None:
@@ -55,6 +25,10 @@ def create_employee_set() -> str | None:
     result_json = xmltodict.parse(result.content)
     user_data = result_json["report"]["QueryResult"]["ResultXml"]["rowset"]["Row"]
     terminated_employee_barcodes = [user["Column4"] for user in user_data]
+
+    if len(terminated_employee_barcodes) >= STAFF_USER_THRESHOLD:
+        print(f"Number of staff found ({len(terminated_employee_barcodes)}) is greater than threshold ({STAFF_USER_THRESHOLD}). Either the SIS load didn't update your status dates or the STAFF_USER_THRESHOLD is misconfigured.")
+        exit(1)
 
     # 2 - Create a set with the employees
     set_name = f"Terminated Employees as of {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}"
@@ -969,13 +943,6 @@ def run_student_job(set_id):
 
 
 def main():
-    should_start_job = check_valid_status()
-
-    if not should_start_job:
-        print("Configuration invalid or status has not been updated. Goodbye!")
-        return -1
-    else: print("User checks out... starting set creation.")
-
     employee_set_id = create_employee_set()
     student_set_id = create_student_set()
 
