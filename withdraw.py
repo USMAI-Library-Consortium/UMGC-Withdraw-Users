@@ -180,7 +180,7 @@ def create_student_set() -> str | None:
     return set_id
 
 last_day_of_prev_month = date.today().replace(day=1) - timedelta(days=1)
-dt = datetime(last_day_of_prev_month.year, last_day_of_prev_month.month, last_day_of_prev_month.day)
+dt = datetime(last_day_of_prev_month.year, last_day_of_prev_month.month, last_day_of_prev_month.day, 12, 0, 0)
 time_millis = int(dt.timestamp() * 1000)
 
 
